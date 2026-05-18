@@ -184,6 +184,32 @@
             top: 0;
             z-index: -9999;
         }
+
+        /* Animasi Kustom untuk Tooltip Petunjuk Dinamis */
+        .tooltip-box {
+            max-height: 0;
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.25s ease-out, 
+                        transform 0.25s ease-out, 
+                        margin 0.3s ease-out;
+            margin-top: 0;
+        }
+        
+        /* Muncul ketika input difokuskan atau diarahkan kursor (hover) */
+        .glass-input:focus + .tooltip-box,
+        .glass-input:hover + .tooltip-box,
+        select:focus + .tooltip-box,
+        select:hover + .tooltip-box {
+            max-height: 150px; /* Kapasitas tinggi maksimum */
+            opacity: 1;
+            transform: translateY(0);
+            margin-top: 0.25rem; /* Spasi dinamis sangat rapat (setara mt-1) */
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body class="text-white antialiased">
@@ -274,13 +300,13 @@
 
         <!-- VIEW 2: FORM DAFTAR ULANG -->
         <div id="form-daftar-ulang-view" class="glass-card rounded-3xl p-6 md:p-10 w-full max-w-4xl flex flex-col hidden">
-            <div class="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+            <div class="flex items-center justify-between mb-6 border-b border-white/10 pb-4">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
                         <i class="fa-solid fa-file-invoice-dollar text-2xl text-orange-400"></i>
                     </div>
                     <div class="text-left">
-                        <h2 class="text-xl md:text-3xl font-bold text-white mb-1">Formulir Daftar Ulang</h2>
+                        <h2 class="text-xl md:text-3xl font-bold text-white mb-0.5">Formulir Daftar Ulang</h2>
                         <p class="text-orange-200 text-xs md:text-sm">Lengkapi data untuk membuat bukti dan PDF otomatis</p>
                     </div>
                 </div>
@@ -289,33 +315,45 @@
                 </button>
             </div>
 
-            <form id="formDaftarUlang" class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+            <!-- Jarak antar baris utama diperkecil menggunakan gap-y-3 -->
+            <form id="formDaftarUlang" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-left">
                 <!-- No Pendaftaran dan Nama Siswa -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 col-span-1 md:col-span-2">
-                    <div class="flex flex-col">
-                        <label class="text-sm text-gray-300 mb-2 font-semibold">No Pendaftaran</label>
-                        <input type="text" id="noPend" placeholder="Contoh: 012 (3 Digit Angka)" class="glass-input rounded-xl px-4 py-3 w-full" maxlength="3" autocomplete="off" required>
-                        <span id="statusMessage" class="hidden mt-2 text-sm font-semibold"></span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 col-span-1 md:col-span-2">
+                    <div class="flex flex-col relative">
+                        <!-- Jarak label-ke-input dirapatkan dengan mb-1 -->
+                        <label class="text-sm text-gray-300 mb-1 font-semibold">No Pendaftaran</label>
+                        <input type="text" id="noPend" placeholder="Contoh: 012 (3 Digit Angka)" class="glass-input rounded-xl px-3.5 py-2 w-full" maxlength="3" autocomplete="off" required>
+                        <!-- Tooltip Petunjuk Dinamis -->
+                        <div class="tooltip-box bg-slate-900/95 border border-blue-500/30 text-blue-200 text-xs rounded-lg p-2.5 shadow-xl flex items-start gap-2">
+                            <i class="fa-solid fa-circle-info text-blue-400 mt-0.5"></i>
+                            <span>Masukkan 3 digit nomor pendaftaran resmi siswa. Sistem akan otomatis melacak nama dalam database.</span>
+                        </div>
+                        <span id="statusMessage" class="hidden mt-1.5 text-sm font-semibold"></span>
                     </div>
 
-                    <div class="flex flex-col">
-                        <label class="text-sm text-gray-300 mb-2 font-semibold">Nama Siswa</label>
-                        <input type="text" id="namaSiswa" placeholder="Akan terisi otomatis" class="glass-input rounded-xl px-4 py-3 w-full capitalize" disabled style="opacity: 0.5; background-color: rgba(0,0,0,0.3);">
+                    <div class="flex flex-col relative">
+                        <label class="text-sm text-gray-300 mb-1 font-semibold">Nama Siswa</label>
+                        <input type="text" id="namaSiswa" placeholder="Akan terisi otomatis" class="glass-input rounded-xl px-3.5 py-2 w-full capitalize" disabled style="opacity: 0.5; background-color: rgba(0,0,0,0.3);">
+                        <!-- Tooltip Petunjuk Dinamis -->
+                        <div class="tooltip-box bg-slate-900/95 border border-slate-700 text-gray-300 text-xs rounded-lg p-2.5 shadow-xl flex items-start gap-2">
+                            <i class="fa-solid fa-lock text-slate-400 mt-0.5"></i>
+                            <span>Kolom ini terkunci. Nama akan muncul otomatis setelah Anda mengetikkan No Pendaftaran yang valid.</span>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Riwayat Pembayaran -->
-                <div id="riwayatContainer" class="col-span-1 md:col-span-2 hidden mb-2">
-                    <label class="text-sm text-yellow-300 mb-2 font-semibold block"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Riwayat Pembayaran</label>
+                <div id="riwayatContainer" class="col-span-1 md:col-span-2 hidden mb-1 transition-all duration-350">
+                    <label class="text-sm text-yellow-300 mb-1 font-semibold block"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Riwayat Pembayaran</label>
                     <div class="overflow-x-auto rounded-xl border border-white/10 bg-black/20">
                         <table class="w-full text-xs md:text-sm text-left text-gray-300 whitespace-nowrap">
                             <thead class="text-xs text-white uppercase bg-white/10">
                                 <tr>
-                                    <th scope="col" class="px-4 py-3">No Kwitansi</th>
-                                    <th scope="col" class="px-4 py-3">No Pend</th>
-                                    <th scope="col" class="px-4 py-3">Angsuran</th>
-                                    <th scope="col" class="px-4 py-3">Sisa Angsuran</th>
-                                    <th scope="col" class="px-4 py-3">Status</th>
+                                    <th scope="col" class="px-4 py-2">No Kwitansi</th>
+                                    <th scope="col" class="px-4 py-2">No Pend</th>
+                                    <th scope="col" class="px-4 py-2">Angsuran</th>
+                                    <th scope="col" class="px-4 py-2">Sisa Angsuran</th>
+                                    <th scope="col" class="px-4 py-2">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="riwayatBody" class="divide-y divide-white/5">
@@ -324,32 +362,48 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col">
-                    <label class="text-sm text-gray-300 mb-2 font-semibold">Nama Pembayar (Ortu/Wali)</label>
-                    <input type="text" id="namaPembayar" placeholder="Nama Lengkap Pembayar" class="glass-input rounded-xl px-4 py-3 w-full capitalize" required>
+                <div class="flex flex-col relative">
+                    <label class="text-sm text-gray-300 mb-1 font-semibold">Nama Pembayar (Ortu/Wali)</label>
+                    <input type="text" id="namaPembayar" placeholder="Nama Lengkap Pembayar" class="glass-input rounded-xl px-3.5 py-2 w-full capitalize" required oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                    <!-- Tooltip Petunjuk Dinamis -->
+                    <div class="tooltip-box bg-slate-900/95 border border-yellow-500/30 text-yellow-200 text-xs rounded-lg p-2.5 shadow-xl flex items-start gap-2">
+                        <i class="fa-solid fa-keyboard text-yellow-400 mt-0.5"></i>
+                        <span>Wajib diisi menggunakan karakter huruf saja (tanpa angka maupun simbol khusus).</span>
+                    </div>
                 </div>
 
-                <div class="flex flex-col">
-                    <label class="text-sm text-gray-300 mb-2 font-semibold">Angsuran Ke-</label>
-                    <select id="angsuranKe" class="glass-input rounded-xl px-4 py-3 w-full appearance-none" disabled style="opacity: 0.4; background-color: rgba(0, 0, 0, 0.4);">
+                <div class="flex flex-col relative">
+                    <label class="text-sm text-gray-300 mb-1 font-semibold">Angsuran Ke-</label>
+                    <select id="angsuranKe" class="glass-input rounded-xl px-3.5 py-2 w-full appearance-none" disabled style="opacity: 0.4; background-color: rgba(0, 0, 0, 0.4);">
                         <option value="1" class="text-black">Angsuran 1</option>
                         <option value="2" class="text-black">Angsuran 2</option>
                         <option value="3" class="text-black">Angsuran 3</option>
                         <option value="4" class="text-black">Angsuran 4</option>
                         <option value="5" class="text-black">Angsuran 5</option>
                         <option value="6" class="text-black">Angsuran 6</option>
+                        <option value="7" class="text-black">Angsuran 7 (Bayar Penuh)</option>
                         <option value="Lunas" class="text-black">Lunas (Bayar Penuh)</option>
                     </select>
+                    <!-- Tooltip Petunjuk Dinamis -->
+                    <div class="tooltip-box bg-slate-900/95 border border-slate-700 text-gray-300 text-xs rounded-lg p-2.5 shadow-xl flex items-start gap-2">
+                        <i class="fa-solid fa-circle-nodes text-slate-400 mt-0.5"></i>
+                        <span>Sistem otomatis menentukan urutan termin angsuran pendaftaran berdasarkan riwayat Anda sebelumnya.</span>
+                    </div>
                 </div>
                 
-                <div class="flex flex-col">
-                    <label class="text-sm text-gray-300 mb-2 font-semibold">Bayar Angsuran Saat Ini (Rp)</label>
-                    <input type="text" inputmode="numeric" id="Angsuran" placeholder="Cukup angka tanpa titik (Contoh: 1500000)" class="glass-input rounded-xl px-4 py-3 w-full" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <div class="flex flex-col relative">
+                    <label class="text-sm text-gray-300 mb-1 font-semibold">Bayar Angsuran Saat Ini (Rp)</label>
+                    <input type="text" inputmode="numeric" id="Angsuran" placeholder="Cukup angka tanpa titik (Contoh: 1500000)" class="glass-input rounded-xl px-3.5 py-2 w-full" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <!-- Tooltip Petunjuk Dinamis -->
+                    <div class="tooltip-box bg-slate-900/95 border border-yellow-500/30 text-yellow-200 text-xs rounded-lg p-2.5 shadow-xl flex items-start gap-2">
+                        <i class="fa-solid fa-coins text-yellow-400 mt-0.5"></i>
+                        <span>Masukkan nominal angka murni saja (tanpa simbol Rp, tanda titik, atau koma).</span>
+                    </div>
                 </div>
                 
-                <div class="flex flex-col">
-                    <label class="text-sm text-gray-300 mb-2 font-semibold">Nama Penerima</label>
-                    <select id="namaPenerima" class="glass-input rounded-xl px-4 py-3 w-full appearance-none" required>
+                <div class="flex flex-col relative">
+                    <label class="text-sm text-gray-300 mb-1 font-semibold">Nama Penerima</label>
+                    <select id="namaPenerima" class="glass-input rounded-xl px-3.5 py-2 w-full appearance-none" required>
                         <option value="" disabled selected class="text-black">-- Pilih Nama Penerima --</option>
                         <option value="Nuryati" class="text-black">Nuryati</option>
                         <option value="Atin S" class="text-black">Atin S</option>
@@ -357,18 +411,23 @@
                         <option value="Faridanti A" class="text-black">Faridanti A</option>
                         <option value="Oktina LH" class="text-black">Oktina LH</option>
                     </select>
+                    <!-- Tooltip Petunjuk Dinamis -->
+                    <div class="tooltip-box bg-slate-900/95 border border-blue-500/30 text-blue-200 text-xs rounded-lg p-2.5 shadow-xl flex items-start gap-2">
+                        <i class="fa-solid fa-user-tie text-blue-400 mt-0.5"></i>
+                        <span>Pilih nama panitia / staf bendahara resmi yang menerima pembayaran ini untuk validitas kuitansi.</span>
+                    </div>
                 </div>
 
                 <!-- Rekapitulasi Penerimaan per Tanggal -->
-                <div id="riwayatPenerimaContainer" class="col-span-1 md:col-span-2 hidden mt-2 mb-2">
-                    <label class="text-sm text-blue-300 mb-2 font-semibold block"><i class="fa-solid fa-wallet mr-1"></i> Rekapitulasi Penerimaan per Tanggal</label>
+                <div id="riwayatPenerimaContainer" class="col-span-1 md:col-span-2 hidden mb-1 transition-all duration-350">
+                    <label class="text-sm text-blue-300 mb-1 font-semibold block"><i class="fa-solid fa-wallet mr-1"></i> Rekapitulasi Penerimaan per Tanggal</label>
                     <div class="overflow-x-auto rounded-xl border border-white/10 bg-black/20">
                         <table class="w-full text-xs md:text-sm text-left text-gray-300 whitespace-nowrap">
                             <thead class="text-xs text-white uppercase bg-white/10">
                                 <tr>
-                                    <th scope="col" class="px-4 py-3">Tanggal Penerimaan</th>
-                                    <th scope="col" class="px-4 py-3">Nama Penerima</th>
-                                    <th scope="col" class="px-4 py-3">Jumlah Diterima</th>
+                                    <th scope="col" class="px-4 py-2">Tanggal Penerimaan</th>
+                                    <th scope="col" class="px-4 py-2">Nama Penerima</th>
+                                    <th scope="col" class="px-4 py-2">Jumlah Diterima</th>
                                 </tr>
                             </thead>
                             <tbody id="riwayatPenerimaBody" class="divide-y divide-white/5">
@@ -377,11 +436,12 @@
                     </div>
                 </div>
 
-                <div class="col-span-1 md:col-span-2 mt-6 flex flex-wrap gap-4 justify-end">
-                    <button onclick="switchView('dashboard-view')" type="button" class="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition-colors border border-white/10">
+                <!-- Jarak tombol navigasi juga dirapatkan dari mt-6 menjadi mt-4 -->
+                <div class="col-span-1 md:col-span-2 mt-4 flex flex-wrap gap-3 justify-end">
+                    <button onclick="switchView('dashboard-view')" type="button" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition-colors border border-white/10 text-sm">
                         <i class="fa-solid fa-arrow-left mr-2"></i> Kembali
                     </button>
-                    <button id="btnCetak" type="button" onclick="kirimDataDanCetak()" class="btn-3d btn-orange px-6 md:px-8 py-3 rounded-xl text-white font-bold flex items-center border border-white/10 shadow-lg hover:shadow-xl transition-all">
+                    <button id="btnCetak" type="button" onclick="kirimDataDanCetak()" class="btn-3d btn-orange px-6 md:px-7 py-2.5 rounded-xl text-white font-bold flex items-center border border-white/10 shadow-lg hover:shadow-xl transition-all text-sm">
                         <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Cetak Kuintasi
                     </button>
                 </div>
@@ -392,19 +452,22 @@
 
     <!-- LOGIKA JAVASCRIPT UTAMA -->
     <script>
+        // Tautan Folder Drive Baru Anda disematkan di sini
         const daftarLink = {
             pendaftaran: "https://forms.gle/rYQFaNmSykxzw2QF6",
             formulir: "https://drive.google.com/drive/folders/1Rx5WDtgP56cSgvjbWlnJXUsgsCkAygVJ?usp=sharing",
             pengumuman: "https://drive.google.com/drive/folders/1ednOyseVyg7LdCFLZgPrOIhL0yfLaxqH?usp=drive_link",
-            kuitansi: "https://drive.google.com/drive/folders/13vV8-PIgvNSNX3DMOJXihbw_kwo_MwJ2?usp=drive_link"
+            kuitansi: "https://drive.google.com/drive/folders/1nDAA4MVHEPnWVW7c4myHwqz0iC8YKroZ"
         };
 
         // URL Web App Google Apps Script
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyYH2roGWy4RFjMGzQ0g1Zv1vYkomfH6gOauEapTNDLX3fOY6D1_3ckh5AAFrXddOo/exec'; 
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbw8DiGF0PaQ6obLyBdiPylPYJlPcT33kC_WrTge1iHvDA_SQQc99CWrYPWxkiV_Ca67/exec'; 
 
         const DEFAULT_TOTAL_BIAYA = 2500000;
         window.namaSiswa = "";
         window.initialHistoryCount = 0;
+        window.calculatedNextAngsuran = "1"; // Menyimpan urutan asli angsuran saat ini
+        window.previousSisa = DEFAULT_TOTAL_BIAYA;
 
         function hitungTerbilang(nominal) {
             const kekata = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
@@ -459,18 +522,40 @@
             targetView.classList.remove('hidden');
             
             if(viewId === 'form-daftar-ulang-view') {
-                document.getElementById('formDaftarUlang').reset();
-                document.getElementById('statusMessage').className = 'hidden';
-                document.getElementById('riwayatContainer').classList.add('hidden');
-                document.getElementById('riwayatPenerimaContainer').classList.add('hidden');
-                document.getElementById('namaSiswa').value = ""; 
-                window.namaSiswa = "";
-                window.initialHistoryCount = 0;
-                toggleFormFields('lock_all');
+                resetFormState();
             }
             targetView.style.animation = 'none';
             targetView.offsetHeight; 
             targetView.style.animation = null; 
+        }
+
+        // Fungsi khusus untuk me-reset form ke kondisi semula, menyembunyikan tabel dan notifikasi
+        function resetFormState() {
+            // Reset input text, select dan form bawaan HTML
+            document.getElementById('formDaftarUlang').reset();
+            
+            // Menyembunyikan notifikasi status verifikasi No Pendaftaran
+            const statusMsg = document.getElementById('statusMessage');
+            statusMsg.className = 'hidden';
+            statusMsg.innerHTML = '';
+
+            // Menyembunyikan tabel riwayat pembayaran & tabel rekapitulasi penerimaan
+            document.getElementById('riwayatContainer').classList.add('hidden');
+            document.getElementById('riwayatPenerimaContainer').classList.add('hidden');
+            
+            // Mengosongkan isi HTML tabel
+            document.getElementById('riwayatBody').innerHTML = '';
+            document.getElementById('riwayatPenerimaBody').innerHTML = '';
+
+            // Mengosongkan isian nama siswa & variabel penampung sisa bayar
+            document.getElementById('namaSiswa').value = ""; 
+            window.namaSiswa = "";
+            window.initialHistoryCount = 0;
+            window.calculatedNextAngsuran = "1";
+            window.previousSisa = DEFAULT_TOTAL_BIAYA;
+
+            // Mengunci kembali seluruh form kecuali No Pendaftaran
+            toggleFormFields('lock_all');
         }
 
         function bukaLink(tipe) {
@@ -497,17 +582,23 @@
             } else if (state === 'unlock_nama_only') {
                 setElState(elNama, true);
                 const namaFilled = elNama.value.trim() !== '';
-                [elAngsuran, elPenerima, elBtn].forEach(el => setElState(el, namaFilled));
+                [elAngsuran, elPenerima].forEach(el => setElState(el, namaFilled));
+                // Tombol cetak kuitansi dikunci sampai nama penerima dipilih & sinkronisasi selesai
+                setElState(elBtn, false);
             }
             setElState(elAngsuranKe, false);
         }
 
         document.getElementById('namaPembayar').addEventListener('input', function() {
+            // Validasi ketat real-time: Hanya memperbolehkan huruf alfabet & spasi
+            this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+
             if (!this.disabled) {
                 const isFilled = this.value.trim() !== '';
                 setElState(document.getElementById('Angsuran'), isFilled);
                 setElState(document.getElementById('namaPenerima'), isFilled);
-                setElState(document.getElementById('btnCetak'), isFilled);
+                // Menjaga tombol cetak tetap mati jika nama pembayar diubah, hingga penerima disinkronkan kembali
+                setElState(document.getElementById('btnCetak'), false);
             }
         });
 
@@ -515,10 +606,17 @@
             const nama = this.value;
             const container = document.getElementById('riwayatPenerimaContainer');
             const tbody = document.getElementById('riwayatPenerimaBody');
+            const elBtn = document.getElementById('btnCetak');
 
-            if (!nama) { container.classList.add('hidden'); return; }
+            if (!nama) { 
+                container.classList.add('hidden'); 
+                setElState(elBtn, false);
+                return; 
+            }
 
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-yellow-300"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Menghitung total penerimaan...</td></tr>';
+            // Kunci tombol cetak saat sinkronisasi nama penerima dimulai
+            setElState(elBtn, false);
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-yellow-300 text-xs"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Menghitung total penerimaan...</td></tr>';
             container.classList.remove('hidden');
 
             try {
@@ -531,15 +629,57 @@
                     result.data.forEach(item => {
                         const nominalFormatted = parseInt(item.total).toLocaleString('id-ID');
                         tbody.innerHTML += `<tr class="hover:bg-white/5 transition-colors">
-                            <td class="px-4 py-3">${item.tanggal}</td>
-                            <td class="px-4 py-3 font-medium text-white">${item.nama}</td>
-                            <td class="px-4 py-3 font-bold text-green-300">Rp ${nominalFormatted}</td></tr>`;
+                            <td class="px-4 py-2">${item.tanggal}</td>
+                            <td class="px-4 py-2 font-medium text-white">${item.nama}</td>
+                            <td class="px-4 py-2 font-bold text-green-300">Rp ${nominalFormatted}</td></tr>`;
                     });
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-400">Belum ada riwayat penerimaan untuk ${nama}.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-xs text-gray-400">Belum ada riwayat penerimaan untuk ${nama}.</td></tr>`;
+                }
+                
+                // SINKRONISASI SELESAI & BERHASIL: Nyalakan kembali tombol Cetak Kuitansi
+                const hasPembayar = document.getElementById('namaPembayar').value.trim() !== '';
+                const hasAngsuran = document.getElementById('Angsuran').value.trim() !== '';
+                if (hasPembayar && hasAngsuran) {
+                    setElState(elBtn, true);
                 }
             } catch (error) {
-                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-orange-400"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Gagal terhubung ke server.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-xs text-orange-400"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Gagal terhubung ke server.</td></tr>';
+                // Jika sinkronisasi gagal, tetap kunci tombol cetak untuk mencegah transaksi tanpa rekapan valid
+                setElState(elBtn, false);
+            }
+        });
+
+        // Pastikan ketika nilai angsuran diubah, tombol cetak mengecek status isian sebelum menyala
+        document.getElementById('Angsuran').addEventListener('input', function() {
+            // Real-time filter: Hanya angka
+            this.value = this.value.replace(/[^0-9]/g, '');
+
+            const hasPembayar = document.getElementById('namaPembayar').value.trim() !== '';
+            const hasPenerima = document.getElementById('namaPenerima').value !== '';
+            const hasAngsuran = this.value.trim() !== '';
+            const elBtn = document.getElementById('btnCetak');
+            const elAngsuranKe = document.getElementById('angsuranKe');
+            
+            // Logika Deteksi Lunas Otomatis: jika nominal angsuran >= sisa biaya pendaftaran
+            const nominalBayar = parseInt(this.value) || 0;
+            const sisaBaru = (window.previousSisa !== undefined ? window.previousSisa : DEFAULT_TOTAL_BIAYA) - nominalBayar;
+
+            if (hasAngsuran && sisaBaru <= 0) {
+                elAngsuranKe.value = "Lunas";
+            } else {
+                // Kembalikan ke step angsuran berikutnya yang asli
+                elAngsuranKe.value = window.calculatedNextAngsuran || "1";
+            }
+
+            if (hasPembayar && hasPenerima && hasAngsuran) {
+                // Hanya izinkan aktif jika nama penerima sudah selesai ter-fetch (bukan sedang loading)
+                const isSyncing = document.getElementById('riwayatPenerimaBody').innerHTML.includes('fa-spinner');
+                if (!isSyncing) {
+                    setElState(elBtn, true);
+                }
+            } else {
+                setElState(elBtn, false);
             }
         });
 
@@ -552,7 +692,7 @@
 
             if (this.value.length === 3) {
                 statusMsg.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa status & nama siswa...';
-                statusMsg.className = 'text-yellow-400 text-sm mt-2 font-semibold block';
+                statusMsg.className = 'text-yellow-400 text-sm mt-1.5 font-semibold block';
                 toggleFormFields('lock_all');
 
                 try {
@@ -580,45 +720,59 @@
                             const formatRp = (val) => (!val || isNaN(parseInt(String(val).replace(/[^0-9]/g, '')))) ? val || '-' : 'Rp ' + parseInt(String(val).replace(/[^0-9]/g, '')).toLocaleString('id-ID');
                             
                             riwayatBody.innerHTML += `<tr class="hover:bg-white/5 transition-colors">
-                                <td class="px-4 py-3 font-medium text-white">${item.noKwitansi || '-'}</td>
-                                <td class="px-4 py-3">${item.noPend || '-'}</td>
-                                <td class="px-4 py-3 font-semibold text-green-300">${formatRp(item.angsuran)}</td>
-                                <td class="px-4 py-3 font-semibold text-orange-300">${formatRp(item.sisaAngsuran)}</td>
-                                <td class="px-4 py-3"><span class="px-2 py-1 rounded text-[10px] font-bold ${statusColor}">${item.status || '-'}</span></td></tr>`;
+                                <td class="px-4 py-2 font-medium text-white">${item.noKwitansi || '-'}</td>
+                                <td class="px-4 py-2">${item.noPend || '-'}</td>
+                                <td class="px-4 py-2 font-semibold text-green-300">${formatRp(item.angsuran)}</td>
+                                <td class="px-4 py-2 font-semibold text-orange-300">${formatRp(item.sisaAngsuran)}</td>
+                                <td class="px-4 py-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${statusColor}">${item.status || '-'}</span></td></tr>`;
                         });
                         riwayatContainer.classList.remove('hidden');
                         const lastTx = result.history[result.history.length - 1];
                         window.previousSisa = lastTx ? (parseInt(lastTx.sisaAngsuran.toString().replace(/[^0-9]/g, '')) || 0) : 0;
                     } else {
                         riwayatContainer.classList.add('hidden');
-                        window.previousSisa = 0;
+                        window.previousSisa = DEFAULT_TOTAL_BIAYA;
                         window.initialHistoryCount = 0;
                     }
 
+                    // Dinamisasi urutan angsuran berikutnya yang tangguh
                     let nextAngsuran = "1";
                     if (result.angsuranKe && result.angsuranKe !== "Belum Ada") {
                         let lastAngsuran = result.angsuranKe.toString().toLowerCase();
-                        if (lastAngsuran.includes("1")) nextAngsuran = "2";
-                        else if (lastAngsuran.includes("2")) nextAngsuran = "3";
-                        else if (lastAngsuran.includes("3")) nextAngsuran = "4";
-                        else if (lastAngsuran.includes("4")) nextAngsuran = "5";
-                        else if (lastAngsuran.includes("5")) nextAngsuran = "6";
-                        else if (lastAngsuran.includes("6") || lastAngsuran.includes("lunas")) nextAngsuran = "Lunas";
+                        if (lastAngsuran.includes("lunas")) {
+                            nextAngsuran = "Lunas";
+                        } else {
+                            // Extract nomor digit angsuran terakhir
+                            let match = lastAngsuran.match(/\d+/);
+                            if (match) {
+                                let currentNum = parseInt(match[0]);
+                                let nextNum = currentNum + 1;
+                                if (nextNum > 7) {
+                                    nextAngsuran = "Lunas";
+                                } else {
+                                    nextAngsuran = nextNum.toString();
+                                }
+                            } else {
+                                nextAngsuran = "1";
+                            }
+                        }
                     }
+                    
+                    window.calculatedNextAngsuran = nextAngsuran; // Menyimpan index asli angsuran saat ini
                     document.getElementById('angsuranKe').value = nextAngsuran;
 
                     if (result.status === 'Lunas' || result.angsuranKe === 'Lunas') {
                         statusMsg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> No Pendaftaran ' + this.value + ' sudah LUNAS. Form dikunci.';
-                        statusMsg.className = 'text-red-400 text-sm mt-2 font-semibold block';
+                        statusMsg.className = 'text-red-400 text-sm mt-1.5 font-semibold block';
                         toggleFormFields('lock_all');
                     } else {
                         statusMsg.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + (result.angsuranKe !== "Belum Ada" ? "Riwayat terakhir: " + result.angsuranKe : "Belum ada riwayat") + '. Silakan lanjutkan.';
-                        statusMsg.className = 'text-green-400 text-sm mt-2 font-semibold block';
+                        statusMsg.className = 'text-green-400 text-sm mt-1.5 font-semibold block';
                         toggleFormFields('unlock_nama_only');
                     }
                 } catch (error) {
                     statusMsg.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Gagal mengecek status.';
-                    statusMsg.className = 'text-orange-400 text-sm mt-2 font-semibold block';
+                    statusMsg.className = 'text-orange-400 text-sm mt-1.5 font-semibold block';
                     toggleFormFields('unlock_nama_only');
                 }
             } else {
@@ -628,6 +782,8 @@
                 namaSiswaInput.value = ""; 
                 window.namaSiswa = "";
                 window.initialHistoryCount = 0;
+                window.calculatedNextAngsuran = "1";
+                window.previousSisa = DEFAULT_TOTAL_BIAYA;
                 toggleFormFields('lock_all');
             }
         });
@@ -651,9 +807,9 @@
                         <div class="flex items-center gap-3">
                             <img src="https://i.ibb.co.com/G4D06kBh/logodipo-trans.png" alt="Logo" class="w-10 h-10 object-contain" crossorigin="anonymous">
                             <div>
-                                <h4 class="text-[8px] uppercase font-bold tracking-wider text-slate-500 leading-none mb-1">YAYASAN AL MUKARROMAH SAMPANG</h4>
-                                <h2 class="text-sm font-black uppercase tracking-tight leading-none text-slate-900 mb-1">SMP DIPONEGORO SAMPANG</h2>
-                                <p class="text-[7px] text-slate-600 font-medium">Jl. Gerilya 70 Sampang, Cilacap, 53273</p>
+                                <h4 class="text-[10px] uppercase font-bold tracking-wider text-slate-500 leading-none mb-1">YAYASAN AL MUKARROMAH SAMPANG</h4>
+                                <h2 class="text-[18] font-black uppercase tracking-tight leading-none text-slate-900 mb-1">SMP DIPONEGORO SAMPANG</h2>
+                                <p class="text-[8px] text-slate-600 font-medium">Jl. Gerilya 70 Sampang, Cilacap, 53273</p>
                             </div>
                         </div>
                         <div class="text-right flex flex-col items-end">
@@ -686,7 +842,7 @@
                         <div class="flex items-end">
                             <span class="w-32 font-bold text-slate-800 shrink-0 uppercase tracking-wider text-[8px]">Untuk Pembayaran</span>
                             <span class="px-1 font-bold">:</span>
-                            <div class="border-b border-dotted border-slate-600 flex-grow pb-0.5 px-2 text-slate-900 typewriter-font font-medium text-[10px]">Pembayaran Daftar Ulang SPMB 2026 - No. Pend ${noPend} (Tahap ${angsuranKe})</div>
+                            <div class="border-b border-dotted border-slate-600 flex-grow pb-0.5 px-2 text-slate-900 typewriter-font font-medium text-[10px]">Pembayaran Daftar Ulang SPMB 2026 - No. Pend ${noPend} (Tahap ${angsuranKe === 'Lunas' ? 'Pelunasan' : 'Angsuran ' + angsuranKe})</div>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-4">
@@ -705,8 +861,8 @@
 
                     <!-- Kotak Catatan Pembayaran -->
                     <div class="border border-slate-400 rounded p-1.5 bg-slate-50/50 text-[8px] mt-1.5 leading-snug">
-                        <span class="font-extrabold text-slate-800 block uppercase tracking-wider text-[7px] mb-0.5"><i class="fa-solid fa-circle-info mr-1"></i>Catatan Penting:</span>
-                        <span class="text-slate-600">
+                        <span class="font-extrabold text-slate-800 block uppercase tracking-wider text-[10px] mb-0.5"><i class="fa-solid fa-circle-info mr-1"></i>Catatan Penting:</span>
+                        <span class="text-slate-800">
                             1. Kuitansi ini sah apabila terdapat tanda tangan petugas penerima dan nama pembayar yang jelas.<br>
                             2. Pembayaran daftar ulang dicatat secara real-time pada sistem informasi sekolah.<br>
                             3. Harap simpan lembar kuitansi ini dengan baik sebagai bukti fisik daftar ulang yang sah.
@@ -728,7 +884,7 @@
                                 <div class="w-24 border-b border-slate-800 pb-0.5">
                                     <p class="font-bold text-[9px] text-slate-900 typewriter-font uppercase tracking-wide truncate max-w-[95px]">${namaFormatted}</p>
                                 </div>
-                                <p class="text-[6px] uppercase font-bold text-slate-500 mt-0.5 tracking-wider">Orang Tua / Wali</p>
+                                <p class="text-[7px] uppercase font-bold text-slate-800 mt-0.5 tracking-wider">Orang Tua / Wali / Siswa</p>
                             </div>
                             <div class="text-center min-w-[95px] flex flex-col items-center">
                                 <p class="text-[7px] font-semibold text-slate-600 mb-0.5">Sampang, ${tglHariIni}</p>
@@ -736,7 +892,7 @@
                                 <div class="w-24 border-b border-slate-800 pb-0.5">
                                     <p class="font-bold text-[9px] text-slate-900 typewriter-font uppercase tracking-wide truncate max-w-[95px]">${namaPenerima}</p>
                                 </div>
-                                <p class="text-[6px] uppercase font-bold text-slate-500 mt-0.5 tracking-wider">Panitia SPMB</p>
+                                <p class="text-[7px] uppercase font-bold text-slate-800 mt-0.5 tracking-wider">Panitia SPMB</p>
                             </div>
                         </div>
                     </div>
@@ -753,15 +909,28 @@
                 templateKuitansi('ARSIP/PANITIA');
         }
 
-        // =========================================================================================
+        // =========================================================================
         // ALUR UTAMA: Simpan Sheet -> Ambil No Kwitansi -> Bikin PDF Latar Belakang -> Upload Drive
-        // =========================================================================================
+        // =========================================================================
         async function kirimDataDanCetak() {
             const noPend = document.getElementById('noPend').value.trim();
             const namaPembayar = document.getElementById('namaPembayar').value.trim();
             const angsuran = document.getElementById('Angsuran').value.trim();
             const namaPenerima = document.getElementById('namaPenerima').value; 
             const angsuranKe = document.getElementById('angsuranKe').value;
+
+            // Validasi Sisi Kode saat Submit
+            const hurufRegex = /^[a-zA-Z\s]+$/;
+            if (namaPembayar && !hurufRegex.test(namaPembayar)) {
+                showModal('warning', 'Validasi Nama Salah!', 'Nama Pembayar wajib diisi dengan huruf saja tanpa angka atau simbol.');
+                return;
+            }
+
+            const angkaRegex = /^[0-9]+$/;
+            if (angsuran && !angkaRegex.test(angsuran)) {
+                showModal('warning', 'Validasi Nominal Salah!', 'Kolom Bayar Angsuran wajib diisi angka bulat saja tanpa simbol, spasi, atau tanda baca.');
+                return;
+            }
 
             if (!noPend || !namaPembayar || !angsuran || !namaPenerima) {
                 showModal('warning', 'Data Belum Lengkap!', 'Harap isi seluruh kolom form.'); return; 
@@ -861,11 +1030,15 @@
                 hiddenWrapper.style.opacity = '0.01'; // Kembalikan ke mode hantu
                 const base64Data = pdfDataUri.split(',')[1];
 
-                // 4. KIRIM PDF KE DRIVE GOOGLE APPS SCRIPT
-                const pdfForm = new URLSearchParams();
-                pdfForm.append("action", "savePdfOnly");
-                pdfForm.append("filename", judulDokumen + '.pdf');
-                pdfForm.append("pdfData", base64Data);
+                // 4. KIRIM PDF KE DRIVE GOOGLE APPS SCRIPT MENGGUNAKAN FORM DATA & URL ENCODING COMPATIBILITY
+                const formData = new FormData();
+                formData.append("action", "savePdfOnly");
+                formData.append("filename", judulDokumen + '.pdf');
+                formData.append("pdfData", base64Data);
+                formData.append("folderId", "1nDAA4MVHEPnWVW7c4myHwqz0iC8YKroZ");
+
+                // Konversi FormData ke URLSearchParams agar GAS doPost(e) dapat membaca e.parameter dengan andal tanpa error multipart
+                const pdfForm = new URLSearchParams(formData);
 
                 const pdfResponse = await fetch(scriptURL, { method: 'POST', body: pdfForm });
                 
@@ -907,10 +1080,13 @@
                 `);
                 printWindow.document.close();
 
+                // RESTORE BUTTON STATE & RESET FORM TO INITIAL CLEAN STATE
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
-                document.getElementById('formDaftarUlang').reset(); 
-                toggleFormFields('lock_all');
+                
+                // Me-reset formulir dan membersihkan notifikasi, tabel, tooltip, serta mengunci form kembali
+                resetFormState();
+                
                 showModal('success', 'Sukses Disimpan ke Drive!', 'Data pembayaran berhasil diproses dan PDF Kuitansi telah dicadangkan ke Google Drive secara otomatis.');
 
             } catch (error) {
