@@ -18,7 +18,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- Favicon -->
-    <link rel="icon" href="https://i.ibb.co.com/G4D06kBh/logodipo-trans.png">
+    <link rel="icon" id="dynamic-favicon" href="https://i.ibb.co/G4D06kBh/logodipo-trans.png">
     
     <!-- Three.js untuk Background 3D -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -211,6 +211,25 @@
             pointer-events: auto;
         }
     </style>
+    
+    <!-- Script Penanganan Error Logo secara Global (Bypass Internet Positif ISP) -->
+    <script>
+        function handleLogoError(img) {
+            if (!img.dataset.tried) {
+                img.dataset.tried = "1";
+                // Jika domain .co gagal, coba pakai .co.com (ImgBB Bypass Proxy)
+                if (img.src.includes('i.ibb.co/')) {
+                    img.src = img.src.replace('i.ibb.co/', 'i.ibb.co.com/');
+                    return;
+                } else if (img.src.includes('i.ibb.co.com/')) {
+                    img.src = img.src.replace('i.ibb.co.com/', 'i.ibb.co/');
+                    return;
+                }
+            }
+            // Jika kedua domain diblokir total oleh ISP user, gunakan Avatar UI berlogo inisial yang tidak diblokir
+            img.src = 'https://ui-avatars.com/api/?name=SMP+Diponegoro&background=10b981&color=ffffff&size=128&bold=true';
+        }
+    </script>
 </head>
 <body class="text-white antialiased">
 
@@ -237,8 +256,8 @@
             
             <!-- Header Section -->
             <div class="mb-6 md:mb-8 animate-float">
-                <div class="w-20 h-20 md:w-24 md:h-24 mx-auto flex items-center justify-center mb-4 drop-shadow-2xl">
-                    <img src="https://i.ibb.co.com/G4D06kBh/logodipo-trans.png" alt="Logo SMP Diponegoro Sampang" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=SMP+D&background=0f172a&color=60a5fa&size=128&bold=true';">
+                <div class="w-24 h-24 mx-auto flex items-center justify-center mb-4 drop-shadow-2xl">
+                    <img src="https://i.ibb.co/G4D06kBh/logodipo-trans.png" alt="Logo SMP Diponegoro Sampang" class="w-full h-full object-contain" onerror="handleLogoError(this)">
                 </div>
                 <h3 class="text-base md:text-lg font-medium text-yellow-300 mb-1">Selamat Datang di</h3>
                 <h2 class="text-lg md:text-xl font-semibold text-blue-200 tracking-wider uppercase mb-1">Sistem Penerimaan Murid Baru (SPMB)</h2>
@@ -315,13 +334,12 @@
                 </button>
             </div>
 
-            <!-- Jarak antar baris utama diperkecil menggunakan gap-y-3 -->
             <form id="formDaftarUlang" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-left">
                 <!-- No Pendaftaran dan Nama Siswa -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 col-span-1 md:col-span-2">
                     <div class="flex flex-col relative">
-                        <!-- Jarak label-ke-input dirapatkan dengan mb-1 -->
                         <label class="text-sm text-gray-300 mb-1 font-semibold">No Pendaftaran</label>
+                        <!-- Perbaikan: Elemen input noPend sudah bersih dari tag seleksi -->
                         <input type="text" id="noPend" placeholder="Contoh: 012 (3 Digit Angka)" class="glass-input rounded-xl px-3.5 py-2 w-full" maxlength="3" autocomplete="off" required>
                         <!-- Tooltip Petunjuk Dinamis -->
                         <div class="tooltip-box bg-slate-900/95 border border-blue-500/30 text-blue-200 text-xs rounded-lg p-2.5 shadow-xl flex items-start gap-2">
@@ -393,7 +411,7 @@
                 
                 <div class="flex flex-col relative">
                     <label class="text-sm text-gray-300 mb-1 font-semibold">Bayar Angsuran Saat Ini (Rp)</label>
-                    <input type="text" inputmode="numeric" id="Angsuran" placeholder="Cukup angka tanpa titik (Contoh: 1500000)" class="glass-input rounded-xl px-3.5 py-2 w-full" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <input type="text" inputmode="numeric" id="Angsuran" placeholder="Cukup angka tanpa titik (Contoh: 1500000)" class="glass-input rounded-xl px-3.5 py-2 w-full transition-all duration-300" required>
                     <!-- Tooltip Petunjuk Dinamis -->
                     <div class="tooltip-box bg-slate-900/95 border border-yellow-500/30 text-yellow-200 text-xs rounded-lg p-2.5 shadow-xl flex items-start gap-2">
                         <i class="fa-solid fa-coins text-yellow-400 mt-0.5"></i>
@@ -468,6 +486,7 @@
         window.initialHistoryCount = 0;
         window.calculatedNextAngsuran = "1"; // Menyimpan urutan asli angsuran saat ini
         window.previousSisa = DEFAULT_TOTAL_BIAYA;
+        window.hasPaidBefore = false; // Flag apakah sudah pernah melakukan pembayaran sebelumnya
 
         function hitungTerbilang(nominal) {
             const kekata = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
@@ -477,7 +496,6 @@
                 let temp = "";
                 if (nilai < 12) temp = " " + kekata[nilai];
                 else if (nilai < 20) temp = konversi(nilai - 10) + " Belas";
-                else if (nilai < 100) temp = konversi(Math.floor(nilai / 10)) + " Puluh" + konversi(nilai % 10);
                 else if (nilai < 100) temp = konversi(Math.floor(nilai / 10)) + " Puluh" + konversi(nilai % 10);
                 else if (nilai < 200) temp = " Seratus" + konversi(nilai - 100);
                 else if (nilai < 1000) temp = konversi(Math.floor(nilai / 100)) + " Ratus" + konversi(nilai % 100);
@@ -547,12 +565,16 @@
             document.getElementById('riwayatBody').innerHTML = '';
             document.getElementById('riwayatPenerimaBody').innerHTML = '';
 
+            // Reset style warna border isian Angsuran
+            document.getElementById('Angsuran').className = 'glass-input rounded-xl px-3.5 py-2 w-full transition-all duration-300';
+
             // Mengosongkan isian nama siswa & variabel penampung sisa bayar
             document.getElementById('namaSiswa').value = ""; 
             window.namaSiswa = "";
             window.initialHistoryCount = 0;
             window.calculatedNextAngsuran = "1";
             window.previousSisa = DEFAULT_TOTAL_BIAYA;
+            window.hasPaidBefore = false;
 
             // Mengunci kembali seluruh form kecuali No Pendaftaran
             toggleFormFields('lock_all');
@@ -570,6 +592,73 @@
             }
         }
 
+        // Validasi real-time yang memantau batas nominal angsuran agar tidak melebihi sisa biaya berjalan
+        function updateFormValidation() {
+            const elNama = document.getElementById('namaPembayar');
+            const elAngsuran = document.getElementById('Angsuran');
+            const elPenerima = document.getElementById('namaPenerima');
+            const elBtn = document.getElementById('btnCetak');
+            const elAngsuranKe = document.getElementById('angsuranKe');
+
+            const hasPembayar = elNama.value.trim() !== '';
+            const hasAngsuran = elAngsuran.value.trim() !== '';
+            const nominalBayar = parseInt(elAngsuran.value) || 0;
+            
+            // Sisa tagihan aktif
+            const previousSisa = window.previousSisa !== undefined ? window.previousSisa : DEFAULT_TOTAL_BIAYA;
+            
+            // ATURAN SPESIFIK: Jika belum pernah membayar (window.hasPaidBefore === false), maksimal pembayaran pertama adalah Rp 700.000.
+            // Jika sudah pernah membayar, batas maksimalnya adalah sisa tagihan berjalan (previousSisa).
+            const currentLimit = window.hasPaidBefore ? previousSisa : Math.min(previousSisa, 700000);
+
+            // 1. Tentukan status aktif/nonaktif input Angsuran (hanya aktif jika Nama Pembayar sudah diisi)
+            if (elNama.disabled === false) { 
+                setElState(elAngsuran, hasPembayar);
+            }
+
+            // 2. Validasi nominal Angsuran melebihi batas limit berjalan
+            if (nominalBayar > currentLimit) {
+                // Tampilkan indikator error visual (border merah terang)
+                elAngsuran.className = 'glass-input rounded-xl px-3.5 py-2 w-full transition-all duration-300 border-2 border-red-500 focus:ring-red-500 focus:border-red-500 bg-red-950/20';
+                
+                // Kunci bidang pilihan Nama Penerima & tombol Cetak Kuitansi (Inaktif)
+                setElState(elPenerima, false);
+                setElState(elBtn, false);
+                
+                // Kembalikan step angsuran ke nilai default aslinya
+                elAngsuranKe.value = window.calculatedNextAngsuran || "1";
+                return;
+            } else {
+                // Kembalikan kelas styling input normal jika nominal valid
+                elAngsuran.className = 'glass-input rounded-xl px-3.5 py-2 w-full transition-all duration-300';
+            }
+
+            // 3. Tentukan status aktif/nonaktif Nama Penerima (aktif jika pembayar & angsuran valid terisi)
+            if (hasPembayar && hasAngsuran && nominalBayar <= currentLimit) {
+                setElState(elPenerima, true);
+            } else {
+                setElState(elPenerima, false);
+            }
+
+            // 4. Hitung status angsuran ke (Lunas jika sisaBaru <= 0, sisaBaru dihitung dari previousSisa - nominalBayar)
+            const sisaBaru = previousSisa - nominalBayar;
+            if (hasAngsuran && sisaBaru <= 0) {
+                elAngsuranKe.value = "Lunas";
+            } else {
+                elAngsuranKe.value = window.calculatedNextAngsuran || "1";
+            }
+
+            // 5. Tentukan status aktif/nonaktif tombol Cetak Kuitansi
+            const hasPenerima = elPenerima.value !== '';
+            const isSyncing = document.getElementById('riwayatPenerimaBody').innerHTML.includes('fa-spinner');
+
+            if (hasPembayar && hasAngsuran && hasPenerima && nominalBayar <= currentLimit && !isSyncing) {
+                setElState(elBtn, true);
+            } else {
+                setElState(elBtn, false);
+            }
+        }
+
         function toggleFormFields(state) {
             const elNama = document.getElementById('namaPembayar');
             const elAngsuran = document.getElementById('Angsuran');
@@ -581,10 +670,8 @@
                 [elNama, elAngsuran, elPenerima, elBtn].forEach(el => setElState(el, false));
             } else if (state === 'unlock_nama_only') {
                 setElState(elNama, true);
-                const namaFilled = elNama.value.trim() !== '';
-                [elAngsuran, elPenerima].forEach(el => setElState(el, namaFilled));
-                // Tombol cetak kuitansi dikunci sampai nama penerima dipilih & sinkronisasi selesai
-                setElState(elBtn, false);
+                // Sinkronkan awal kondisi visual elemen form
+                updateFormValidation();
             }
             setElState(elAngsuranKe, false);
         }
@@ -592,14 +679,13 @@
         document.getElementById('namaPembayar').addEventListener('input', function() {
             // Validasi ketat real-time: Hanya memperbolehkan huruf alfabet & spasi
             this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+            updateFormValidation();
+        });
 
-            if (!this.disabled) {
-                const isFilled = this.value.trim() !== '';
-                setElState(document.getElementById('Angsuran'), isFilled);
-                setElState(document.getElementById('namaPenerima'), isFilled);
-                // Menjaga tombol cetak tetap mati jika nama pembayar diubah, hingga penerima disinkronkan kembali
-                setElState(document.getElementById('btnCetak'), false);
-            }
+        document.getElementById('Angsuran').addEventListener('input', function() {
+            // Real-time filter: Hanya angka
+            this.value = this.value.replace(/[^0-9]/g, '');
+            updateFormValidation();
         });
 
         document.getElementById('namaPenerima').addEventListener('change', async function() {
@@ -637,48 +723,11 @@
                     tbody.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-xs text-gray-400">Belum ada riwayat penerimaan untuk ${nama}.</td></tr>`;
                 }
                 
-                // SINKRONISASI SELESAI & BERHASIL: Nyalakan kembali tombol Cetak Kuitansi
-                const hasPembayar = document.getElementById('namaPembayar').value.trim() !== '';
-                const hasAngsuran = document.getElementById('Angsuran').value.trim() !== '';
-                if (hasPembayar && hasAngsuran) {
-                    setElState(elBtn, true);
-                }
+                // Evaluasi validitas form secara keseluruhan
+                updateFormValidation();
             } catch (error) {
                 tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-xs text-orange-400"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Gagal terhubung ke server.</td></tr>';
                 // Jika sinkronisasi gagal, tetap kunci tombol cetak untuk mencegah transaksi tanpa rekapan valid
-                setElState(elBtn, false);
-            }
-        });
-
-        // Pastikan ketika nilai angsuran diubah, tombol cetak mengecek status isian sebelum menyala
-        document.getElementById('Angsuran').addEventListener('input', function() {
-            // Real-time filter: Hanya angka
-            this.value = this.value.replace(/[^0-9]/g, '');
-
-            const hasPembayar = document.getElementById('namaPembayar').value.trim() !== '';
-            const hasPenerima = document.getElementById('namaPenerima').value !== '';
-            const hasAngsuran = this.value.trim() !== '';
-            const elBtn = document.getElementById('btnCetak');
-            const elAngsuranKe = document.getElementById('angsuranKe');
-            
-            // Logika Deteksi Lunas Otomatis: jika nominal angsuran >= sisa biaya pendaftaran
-            const nominalBayar = parseInt(this.value) || 0;
-            const sisaBaru = (window.previousSisa !== undefined ? window.previousSisa : DEFAULT_TOTAL_BIAYA) - nominalBayar;
-
-            if (hasAngsuran && sisaBaru <= 0) {
-                elAngsuranKe.value = "Lunas";
-            } else {
-                // Kembalikan ke step angsuran berikutnya yang asli
-                elAngsuranKe.value = window.calculatedNextAngsuran || "1";
-            }
-
-            if (hasPembayar && hasPenerima && hasAngsuran) {
-                // Hanya izinkan aktif jika nama penerima sudah selesai ter-fetch (bukan sedang loading)
-                const isSyncing = document.getElementById('riwayatPenerimaBody').innerHTML.includes('fa-spinner');
-                if (!isSyncing) {
-                    setElState(elBtn, true);
-                }
-            } else {
                 setElState(elBtn, false);
             }
         });
@@ -697,7 +746,7 @@
 
                 try {
                     const response = await fetch(scriptURL + "?action=cekStatus&noPend=" + this.value);
-                    if (!response.ok) throw new Error('Jaringan tidak merespon.');
+                    if (!response.ok) throw new Error('Jaringan tidak respon.');
                     const result = await response.json();
 
                     if (result.namaSiswa) {
@@ -714,6 +763,7 @@
                     
                     if (result.history && result.history.length > 0) {
                         window.initialHistoryCount = result.history.length;
+                        window.hasPaidBefore = true; // Set flag bahwa siswa sudah pernah membayar
                         riwayatBody.innerHTML = '';
                         result.history.forEach(item => {
                             let statusColor = (item.status && item.status.toLowerCase() === 'lunas') ? 'bg-green-500/20 text-green-300' : 'bg-orange-500/20 text-orange-300';
@@ -728,11 +778,13 @@
                         });
                         riwayatContainer.classList.remove('hidden');
                         const lastTx = result.history[result.history.length - 1];
-                        window.previousSisa = lastTx ? (parseInt(lastTx.sisaAngsuran.toString().replace(/[^0-9]/g, '')) || 0) : 0;
+                        window.previousSisa = lastTx ? (parseInt(lastTx.sisaAngsuran.toString().replace(/[^0-9]/g, '')) || 0) : DEFAULT_TOTAL_BIAYA;
                     } else {
+                        // Belum pernah membayar sama sekali
                         riwayatContainer.classList.add('hidden');
                         window.previousSisa = DEFAULT_TOTAL_BIAYA;
                         window.initialHistoryCount = 0;
+                        window.hasPaidBefore = false; // Set flag bahwa siswa belum pernah membayar
                     }
 
                     // Dinamisasi urutan angsuran berikutnya yang tangguh
@@ -784,6 +836,7 @@
                 window.initialHistoryCount = 0;
                 window.calculatedNextAngsuran = "1";
                 window.previousSisa = DEFAULT_TOTAL_BIAYA;
+                window.hasPaidBefore = false;
                 toggleFormFields('lock_all');
             }
         });
@@ -814,7 +867,7 @@
                         </div>
                         <div class="text-right flex flex-col items-end">
                             <span class="text-[8px] font-extrabold text-slate-700 uppercase tracking-widest border border-slate-800 px-2 py-0.5 rounded bg-slate-100">KUITANSI (${jenis})</span>
-                            <p class="text-[12px] font-bold text-slate-800 mt-1.5 typewriter-font">No: ${noKwitansi}</p>
+                            <p class="text-[12px] font-bold text-slate-800 mt-1.5 typewriter-font font-bold">No: ${noKwitansi}</p>
                         </div>
                     </div>
 
@@ -825,14 +878,12 @@
                             <div class="border-b border-dotted border-slate-600 flex-grow pb-0.5 px-2 font-bold text-slate-900 text-xs typewriter-font capitalize">${pembayarDanSiswa}</div>
                         </div>
                         
-                        <!-- Uang Sejumlah (Menampilkan nominal bayar angsuran saat ini dalam bentuk angka) -->
                         <div class="flex items-end">
                             <span class="w-32 font-bold text-slate-800 shrink-0 uppercase tracking-wider text-[8px]">Uang Sejumlah</span>
                             <span class="px-1 font-bold">:</span>
                             <div class="border-b border-dotted border-slate-600 flex-grow pb-0.5 px-2 font-black text-slate-950 text-xs typewriter-font">Rp. ${formatRupiahText},-</div>
                         </div>
 
-                        <!-- Baris Terbilang (Menampilkan ejaan kalimat nominal persis di bawah Uang Sejumlah) -->
                         <div class="flex items-start">
                             <span class="w-32 font-bold text-slate-800 shrink-0 uppercase tracking-wider text-[8px] mt-0.5">Terbilang</span>
                             <span class="px-1 font-bold mt-0.5">:</span>
@@ -859,7 +910,6 @@
                         </div>
                     </div>
 
-                    <!-- Kotak Catatan Pembayaran -->
                     <div class="border border-slate-400 rounded p-1.5 bg-slate-50/50 text-[8px] mt-1.5 leading-snug">
                         <span class="font-extrabold text-slate-800 block uppercase tracking-wider text-[10px] mb-0.5"><i class="fa-solid fa-circle-info mr-1"></i>Catatan Penting:</span>
                         <span class="text-slate-800">
@@ -909,9 +959,6 @@
                 templateKuitansi('ARSIP/PANITIA');
         }
 
-        // =========================================================================
-        // ALUR UTAMA: Simpan Sheet -> Ambil No Kwitansi -> Bikin PDF Latar Belakang -> Upload Drive
-        // =========================================================================
         async function kirimDataDanCetak() {
             const noPend = document.getElementById('noPend').value.trim();
             const namaPembayar = document.getElementById('namaPembayar').value.trim();
