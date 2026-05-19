@@ -481,7 +481,7 @@
         // URL Web App Google Apps Script
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw8DiGF0PaQ6obLyBdiPylPYJlPcT33kC_WrTge1iHvDA_SQQc99CWrYPWxkiV_Ca67/exec'; 
 
-        const DEFAULT_TOTAL_BIAYA = 2500000;
+        const DEFAULT_TOTAL_BIAYA = 700000;
         window.namaSiswa = "";
         window.initialHistoryCount = 0;
         window.calculatedNextAngsuran = "1"; // Menyimpan urutan asli angsuran saat ini
@@ -1111,12 +1111,12 @@
                         }
                     </style></head>
                     <body class="bg-slate-100 py-4">
-                        <div class="no-print max-w-[210mm] mx-auto mb-4 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-lg flex items-center justify-between">
-                            <div class="flex items-center gap-4">
-                                <div class="p-3 bg-green-500/20 rounded-full"><i class="fa-solid fa-circle-check text-2xl text-green-400"></i></div>
-                                <div><h3 class="font-bold text-sm">Dokumen Telah Diarsipkan ke Google Drive</h3><p class="text-xs text-gray-300">File <span class="font-mono text-orange-300">${judulDokumen}.pdf</span> telah disimpan secara otomatis.</p></div>
+                        <div class="no-print w-full max-w-[210mm] mx-auto mb-4 bg-slate-800 text-white px-4 py-3 md:px-6 md:py-4 rounded-xl shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div class="flex flex-col sm:flex-row items-center gap-3 md:gap-4 text-center sm:text-left">
+                                <div class="p-2.5 md:p-3 bg-green-500/20 rounded-full"><i class="fa-solid fa-circle-check text-xl md:text-2xl text-green-400"></i></div>
+                                <div><h3 class="font-bold text-sm md:text-base">Dokumen Telah Diarsipkan ke Google Drive</h3><p class="text-xs text-gray-300">File <span class="font-mono text-orange-300">${judulDokumen}.pdf</span> telah disimpan secara otomatis.</p></div>
                             </div>
-                            <button onclick="window.print()" class="bg-blue-500 hover:bg-blue-600 transition-colors text-white font-bold px-6 py-2.5 rounded-lg text-sm shadow flex items-center gap-2">
+                            <button onclick="window.print()" class="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 transition-colors text-white font-bold px-6 py-2.5 rounded-lg text-sm shadow flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-print"></i> Cetak PDF
                             </button>
                         </div>
