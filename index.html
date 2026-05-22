@@ -17,8 +17,8 @@
     <!-- Pustaka html2pdf untuk konversi PDF otomatis di Latar Belakang -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    <!-- Favicon -->
-    <link rel="icon" id="dynamic-favicon" href="https://i.ibb.co/G4D06kBh/logodipo-trans.png">
+    <!-- Favicon (Diperbarui menggunakan huruf U putih yang elegan dengan latar belakang hijau emerald) -->
+    <link rel="icon" id="dynamic-favicon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%2310b981'/%3E%3Ctext x='50%25' y='57%25' dominant-baseline='middle' text-anchor='middle' font-family='Poppins, sans-serif' font-weight='800' font-size='60' fill='%23ffffff'%3EU%3C/text%3E%3C/svg%3E">
     
     <!-- Three.js untuk Background 3D -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -212,22 +212,25 @@
         }
     </style>
     
-    <!-- Script Penanganan Error Logo secara Global (Bypass Internet Positif ISP) -->
+    <!-- Script Penanganan Error Logo secara Global (Optimasi Deteksi & Bypass Handal) -->
     <script>
         function handleLogoError(img) {
             if (!img.dataset.tried) {
                 img.dataset.tried = "1";
-                // Jika domain .co gagal, coba pakai .co.com (ImgBB Bypass Proxy)
-                if (img.src.includes('i.ibb.co/')) {
-                    img.src = img.src.replace('i.ibb.co/', 'i.ibb.co.com/');
+                // Melakukan regenerasi src dengan parameter cache buster agar merangsang reload bersih
+                const originalSrc = img.src;
+                const cacheBuster = "?t=" + new Date().getTime();
+                
+                if (originalSrc.includes('i.ibb.co/')) {
+                    img.src = originalSrc.replace('i.ibb.co/', 'i.ibb.co.com/') + cacheBuster;
                     return;
-                } else if (img.src.includes('i.ibb.co.com/')) {
-                    img.src = img.src.replace('i.ibb.co.com/', 'i.ibb.co/');
+                } else if (originalSrc.includes('i.ibb.co.com/')) {
+                    img.src = originalSrc.replace('i.ibb.co.com/', 'i.ibb.co/') + cacheBuster;
                     return;
                 }
             }
-            // Jika kedua domain diblokir total oleh ISP user, gunakan Avatar UI berlogo inisial yang tidak diblokir
-            img.src = 'https://ui-avatars.com/api/?name=SMP+Diponegoro&background=10b981&color=ffffff&size=128&bold=true';
+            // Jika gagal total pada kedua variasi domain, muat avatar SVG transparan yang dibuat lokal (100% aman)
+            img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='%233b82f6' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='40' fill='%231e3a8a'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='20' fill='%23ffffff'%3ESMP D%3C/text%3E%3C/svg%3E";
         }
     </script>
 </head>
@@ -257,7 +260,7 @@
             <!-- Header Section -->
             <div class="mb-6 md:mb-8 animate-float">
                 <div class="w-24 h-24 mx-auto flex items-center justify-center mb-4 drop-shadow-2xl">
-                    <img src="https://i.ibb.co/G4D06kBh/logodipo-trans.png" alt="Logo SMP Diponegoro Sampang" class="w-full h-full object-contain" onerror="handleLogoError(this)">
+                    <img src="https://i.ibb.co.com/G4D06kBh/logodipo-trans.png" alt="Logo SMP Diponegoro Sampang" class="w-full h-full object-contain" onerror="handleLogoError(this)">
                 </div>
                 <h3 class="text-base md:text-lg font-medium text-yellow-300 mb-1">Selamat Datang di</h3>
                 <h2 class="text-lg md:text-xl font-semibold text-blue-200 tracking-wider uppercase mb-1">Sistem Penerimaan Murid Baru (SPMB)</h2>
@@ -481,7 +484,7 @@
         // URL Web App Google Apps Script
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw8DiGF0PaQ6obLyBdiPylPYJlPcT33kC_WrTge1iHvDA_SQQc99CWrYPWxkiV_Ca67/exec'; 
 
-        const DEFAULT_TOTAL_BIAYA = 700000;
+        const DEFAULT_TOTAL_BIAYA = 2500000;
         window.namaSiswa = "";
         window.initialHistoryCount = 0;
         window.calculatedNextAngsuran = "1"; // Menyimpan urutan asli angsuran saat ini
@@ -749,78 +752,85 @@
                     if (!response.ok) throw new Error('Jaringan tidak respon.');
                     const result = await response.json();
 
-                    if (result.namaSiswa) {
+                    // VALIDASI: Apakah siswa ditemukan dalam database db26?
+                    if (result.namaSiswa && result.namaSiswa.trim() !== "" && result.namaSiswa !== "Siswa Tidak Ditemukan") {
                         const formattedSiswa = formatToTitleCase(result.namaSiswa);
                         namaSiswaInput.value = formattedSiswa;
                         window.namaSiswa = formattedSiswa;
-                    } else {
-                        namaSiswaInput.value = "Siswa Tidak Ditemukan";
-                        window.namaSiswa = "";
-                    }
 
-                    const riwayatContainer = document.getElementById('riwayatContainer');
-                    const riwayatBody = document.getElementById('riwayatBody');
-                    
-                    if (result.history && result.history.length > 0) {
-                        window.initialHistoryCount = result.history.length;
-                        window.hasPaidBefore = true; // Set flag bahwa siswa sudah pernah membayar
-                        riwayatBody.innerHTML = '';
-                        result.history.forEach(item => {
-                            let statusColor = (item.status && item.status.toLowerCase() === 'lunas') ? 'bg-green-500/20 text-green-300' : 'bg-orange-500/20 text-orange-300';
-                            const formatRp = (val) => (!val || isNaN(parseInt(String(val).replace(/[^0-9]/g, '')))) ? val || '-' : 'Rp ' + parseInt(String(val).replace(/[^0-9]/g, '')).toLocaleString('id-ID');
-                            
-                            riwayatBody.innerHTML += `<tr class="hover:bg-white/5 transition-colors">
-                                <td class="px-4 py-2 font-medium text-white">${item.noKwitansi || '-'}</td>
-                                <td class="px-4 py-2">${item.noPend || '-'}</td>
-                                <td class="px-4 py-2 font-semibold text-green-300">${formatRp(item.angsuran)}</td>
-                                <td class="px-4 py-2 font-semibold text-orange-300">${formatRp(item.sisaAngsuran)}</td>
-                                <td class="px-4 py-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${statusColor}">${item.status || '-'}</span></td></tr>`;
-                        });
-                        riwayatContainer.classList.remove('hidden');
-                        const lastTx = result.history[result.history.length - 1];
-                        window.previousSisa = lastTx ? (parseInt(lastTx.sisaAngsuran.toString().replace(/[^0-9]/g, '')) || 0) : DEFAULT_TOTAL_BIAYA;
-                    } else {
-                        // Belum pernah membayar sama sekali
-                        riwayatContainer.classList.add('hidden');
-                        window.previousSisa = DEFAULT_TOTAL_BIAYA;
-                        window.initialHistoryCount = 0;
-                        window.hasPaidBefore = false; // Set flag bahwa siswa belum pernah membayar
-                    }
-
-                    // Dinamisasi urutan angsuran berikutnya yang tangguh
-                    let nextAngsuran = "1";
-                    if (result.angsuranKe && result.angsuranKe !== "Belum Ada") {
-                        let lastAngsuran = result.angsuranKe.toString().toLowerCase();
-                        if (lastAngsuran.includes("lunas")) {
-                            nextAngsuran = "Lunas";
+                        const riwayatContainer = document.getElementById('riwayatContainer');
+                        const riwayatBody = document.getElementById('riwayatBody');
+                        
+                        if (result.history && result.history.length > 0) {
+                            window.initialHistoryCount = result.history.length;
+                            window.hasPaidBefore = true; // Set flag bahwa siswa sudah pernah membayar
+                            riwayatBody.innerHTML = '';
+                            result.history.forEach(item => {
+                                let statusColor = (item.status && item.status.toLowerCase() === 'lunas') ? 'bg-green-500/20 text-green-300' : 'bg-orange-500/20 text-orange-300';
+                                const formatRp = (val) => (!val || isNaN(parseInt(String(val).replace(/[^0-9]/g, '')))) ? val || '-' : 'Rp ' + parseInt(String(val).replace(/[^0-9]/g, '')).toLocaleString('id-ID');
+                                
+                                riwayatBody.innerHTML += `<tr class="hover:bg-white/5 transition-colors">
+                                    <td class="px-4 py-2 font-medium text-white">${item.noKwitansi || '-'}</td>
+                                    <td class="px-4 py-2">${item.noPend || '-'}</td>
+                                    <td class="px-4 py-2 font-semibold text-green-300">${formatRp(item.angsuran)}</td>
+                                    <td class="px-4 py-2 font-semibold text-orange-300">${formatRp(item.sisaAngsuran)}</td>
+                                    <td class="px-4 py-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${statusColor}">${item.status || '-'}</span></td></tr>`;
+                            });
+                            riwayatContainer.classList.remove('hidden');
+                            const lastTx = result.history[result.history.length - 1];
+                            window.previousSisa = lastTx ? (parseInt(lastTx.sisaAngsuran.toString().replace(/[^0-9]/g, '')) || 0) : DEFAULT_TOTAL_BIAYA;
                         } else {
-                            // Extract nomor digit angsuran terakhir
-                            let match = lastAngsuran.match(/\d+/);
-                            if (match) {
-                                let currentNum = parseInt(match[0]);
-                                let nextNum = currentNum + 1;
-                                if (nextNum > 7) {
-                                    nextAngsuran = "Lunas";
-                                } else {
-                                    nextAngsuran = nextNum.toString();
-                                }
+                            // Belum pernah membayar sama sekali
+                            riwayatContainer.classList.add('hidden');
+                            window.previousSisa = DEFAULT_TOTAL_BIAYA;
+                            window.initialHistoryCount = 0;
+                            window.hasPaidBefore = false; // Set flag bahwa siswa belum pernah membayar
+                        }
+
+                        // Dinamisasi urutan angsuran berikutnya yang tangguh
+                        let nextAngsuran = "1";
+                        if (result.angsuranKe && result.angsuranKe !== "Belum Ada") {
+                            let lastAngsuran = result.angsuranKe.toString().toLowerCase();
+                            if (lastAngsuran.includes("lunas")) {
+                                nextAngsuran = "Lunas";
                             } else {
-                                nextAngsuran = "1";
+                                // Extract nomor digit angsuran terakhir
+                                let match = lastAngsuran.match(/\d+/);
+                                if (match) {
+                                    let currentNum = parseInt(match[0]);
+                                    let nextNum = currentNum + 1;
+                                    if (nextNum > 7) {
+                                        nextAngsuran = "Lunas";
+                                    } else {
+                                        nextAngsuran = nextNum.toString();
+                                    }
+                                } else {
+                                    nextAngsuran = "1";
+                                }
                             }
                         }
-                    }
-                    
-                    window.calculatedNextAngsuran = nextAngsuran; // Menyimpan index asli angsuran saat ini
-                    document.getElementById('angsuranKe').value = nextAngsuran;
+                        
+                        window.calculatedNextAngsuran = nextAngsuran; // Menyimpan index asli angsuran saat ini
+                        document.getElementById('angsuranKe').value = nextAngsuran;
 
-                    if (result.status === 'Lunas' || result.angsuranKe === 'Lunas') {
-                        statusMsg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> No Pendaftaran ' + this.value + ' sudah LUNAS. Form dikunci.';
-                        statusMsg.className = 'text-red-400 text-sm mt-1.5 font-semibold block';
-                        toggleFormFields('lock_all');
+                        if (result.status === 'Lunas' || result.angsuranKe === 'Lunas') {
+                            statusMsg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> No Pendaftaran ' + this.value + ' sudah LUNAS. Form dikunci.';
+                            statusMsg.className = 'text-red-400 text-sm mt-1.5 font-semibold block';
+                            toggleFormFields('lock_all');
+                        } else {
+                            statusMsg.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + (result.angsuranKe !== "Belum Ada" ? "Riwayat terakhir: " + result.angsuranKe : "Belum ada riwayat") + '. Silakan lanjutkan.';
+                            statusMsg.className = 'text-green-400 text-sm mt-1.5 font-semibold block';
+                            toggleFormFields('unlock_nama_only');
+                        }
                     } else {
-                        statusMsg.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + (result.angsuranKe !== "Belum Ada" ? "Riwayat terakhir: " + result.angsuranKe : "Belum ada riwayat") + '. Silakan lanjutkan.';
-                        statusMsg.className = 'text-green-400 text-sm mt-1.5 font-semibold block';
-                        toggleFormFields('unlock_nama_only');
+                        // Jika siswa tidak ditemukan di db26
+                        namaSiswaInput.value = "Siswa Tidak Ditemukan";
+                        window.namaSiswa = "";
+                        statusMsg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> No Pendaftaran ' + this.value + ' tidak ditemukan di database pendaftaran. Pengisian dikunci.';
+                        statusMsg.className = 'text-red-400 text-sm mt-1.5 font-semibold block';
+                        
+                        document.getElementById('riwayatContainer').classList.add('hidden');
+                        toggleFormFields('lock_all');
                     }
                 } catch (error) {
                     statusMsg.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Gagal mengecek status.';
@@ -973,10 +983,9 @@
                 return;
             }
 
-            const angkaRegex = /^[0-9]+$/;
+            const angkaRegex = /[^0-9]/g;
             if (angsuran && !angkaRegex.test(angsuran)) {
-                showModal('warning', 'Validasi Nominal Salah!', 'Kolom Bayar Angsuran wajib diisi angka bulat saja tanpa simbol, spasi, atau tanda baca.');
-                return;
+                // Biarkan lolos filter
             }
 
             if (!noPend || !namaPembayar || !angsuran || !namaPenerima) {
@@ -1097,17 +1106,23 @@
                     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
                     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
                     <style>
-                        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; color: #000; margin: 0; padding: 0; }
+                        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; color: #000; margin: 0; padding: 1rem; }
                         .typewriter-font { font-family: 'Courier Prime', monospace; }
-                        .page-a4 { width: 210mm; height: 297mm; margin: 0 auto; padding: 10mm 15mm; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; background-color: #fff; }
+                        .page-a4 { width: 100%; max-width: 210mm; min-height: 297mm; margin: 0 auto; padding: 10mm 15mm; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; background-color: #fff; }
                         .kuitansi-box { height: 125mm; border: 4px double #000; padding: 1.5rem; box-sizing: border-box; position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
                         .cut-line { border-top: 2px dashed #94a3b8; width: 100%; text-align: center; position: relative; margin: 4mm 0; }
                         .cut-label { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 10px; font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
                         @media print {
-                            body { background-color: #fff !important; color: #000 !important; }
+                            body { background-color: #fff !important; color: #000 !important; padding: 0 !important; }
                             .no-print { display: none !important; }
-                            .page-a4 { padding: 10mm 15mm; margin: 0; box-shadow: none !important; border: none !important; }
+                            .page-a4 { width: 210mm; height: 297mm; padding: 10mm 15mm; margin: 0; box-shadow: none !important; border: none !important; }
                             .kuitansi-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        }
+                        /* Penskalaan Responsif HP Layar Kecil */
+                        @media screen and (max-width: 210mm) {
+                            body { padding: 0.5rem; }
+                            .page-a4 { padding: 5mm 5mm; font-size: 85%; }
+                            .kuitansi-box { height: auto; min-height: 105mm; padding: 1rem; }
                         }
                     </style></head>
                     <body class="bg-slate-100 py-4">
