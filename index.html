@@ -344,22 +344,22 @@
                 </h1>
             </div>
 
-            <!-- Dashboard Grid Buttons -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 w-full max-w-6xl px-2">
+            <!-- Dashboard Grid Buttons (Dinamis: Diubah lewat JS menggunakan class grid-cols-*) -->
+            <div id="menu-grid" class="grid grid-cols-1 gap-4 md:gap-6 w-full max-w-6xl px-2">
                 
-                <!-- MENU 1 (Selalu Terbuka untuk Umum) -->
-                <button id="btn-menu-pendaftaran" onclick="bukaLink('pendaftaran')" class="btn-3d btn-blue rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center group cursor-pointer border border-white/10">
-                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-black/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fa-solid fa-user-plus text-2xl md:text-3xl text-white"></i>
+                <!-- MENU 1 (Selalu Terbuka untuk Umum - Dinamis Layout) -->
+                <button id="btn-menu-pendaftaran" onclick="bukaLink('pendaftaran')" class="btn-3d btn-blue rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center group cursor-pointer border border-white/10 transition-all duration-300">
+                    <div class="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-black/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-user-plus text-3xl md:text-4xl text-white"></i>
                     </div>
                     <div class="text-center">
-                        <h3 class="text-base md:text-lg font-bold text-white mb-1">Link Pendaftaran</h3>
-                        <p class="text-blue-100 text-xs opacity-80 hidden md:block">Isi formulir pendaftaran online</p>
+                        <h3 class="text-lg md:text-2xl font-bold text-white mb-1.5">Link Pendaftaran</h3>
+                        <p class="text-blue-100 text-xs md:text-sm opacity-90">Isi formulir pendaftaran online siswa baru</p>
                     </div>
                 </button>
 
                 <!-- MENU 2 (Hanya Terbuka untuk Admin) -->
-                <button id="btn-menu-formulir" onclick="bukaLink('formulir')" class="btn-3d btn-green rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center group cursor-pointer border border-white/10">
+                <button id="btn-menu-formulir" onclick="bukaLink('formulir')" class="btn-3d btn-green rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center group cursor-pointer border border-white/10 hidden">
                     <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-black/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
                         <i class="fa-solid fa-file-pdf text-2xl md:text-3xl text-white"></i>
                     </div>
@@ -370,7 +370,7 @@
                 </button>
 
                 <!-- MENU 3 (Hanya Terbuka untuk Admin) -->
-                <button id="btn-menu-pengumuman" onclick="bukaLink('pengumuman')" class="btn-3d btn-purple rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center group cursor-pointer border border-white/10">
+                <button id="btn-menu-pengumuman" onclick="bukaLink('pengumuman')" class="btn-3d btn-purple rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center group cursor-pointer border border-white/10 hidden">
                     <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-black/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
                         <i class="fa-solid fa-bullhorn text-2xl md:text-3xl text-white"></i>
                     </div>
@@ -381,7 +381,7 @@
                 </button>
 
                 <!-- MENU 4 (Hanya Terbuka untuk Admin) -->
-                <button id="btn-menu-daftar-ulang" onclick="switchView('form-daftar-ulang-view')" class="btn-3d btn-orange rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center group cursor-pointer border border-white/10">
+                <button id="btn-menu-daftar-ulang" onclick="switchView('form-daftar-ulang-view')" class="btn-3d btn-orange rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center group cursor-pointer border border-white/10 hidden">
                     <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-black/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
                         <i class="fa-solid fa-id-card-clip text-2xl md:text-3xl text-white"></i>
                     </div>
@@ -636,23 +636,43 @@
 
         function bukaAksesDashboard(role) {
             const gatewayModal = document.getElementById('gatewayModal');
+            const menuGrid = document.getElementById('menu-grid');
+            const btnPendaftaran = document.getElementById('btn-menu-pendaftaran');
             const btnFormulir = document.getElementById('btn-menu-formulir');
             const btnPengumuman = document.getElementById('btn-menu-pengumuman');
             const btnDaftarUlang = document.getElementById('btn-menu-daftar-ulang');
             const textStatus = document.getElementById('text-status-mode');
 
             if (role === "daftar") {
-                // Sembunyikan tombol non-pendaftaran
+                // SEMBUNYIKAN MENU ADMIN
                 btnFormulir.classList.add('hidden');
                 btnPengumuman.classList.add('hidden');
                 btnDaftarUlang.classList.add('hidden');
+                
+                // UBAH LAYOUT MENJADI SATU KOLOM DI TENGAH (Lebar penuh, padding besar)
+                menuGrid.className = "grid grid-cols-1 gap-4 md:gap-6 w-full max-w-lg px-2 justify-center";
+                btnPendaftaran.className = "btn-3d btn-blue rounded-3xl p-8 md:p-12 flex flex-col items-center justify-center group cursor-pointer border border-white/20 transition-all duration-300 w-full shadow-2xl";
+                
+                // Update teks visual tombol pendaftaran agar lebih informatif
+                btnPendaftaran.querySelector('h3').className = "text-xl md:text-3xl font-black text-white mb-2";
+                btnPendaftaran.querySelector('p').className = "text-blue-100 text-xs md:text-base opacity-90";
+
                 textStatus.innerText = "Mode Pendaftar (Akses Terbatas)";
                 textStatus.className = "font-bold text-emerald-400";
             } else if (role === "admin") {
-                // Tampilkan semua tombol secara penuh
+                // TAMPILKAN KEMBALI MENU ADMIN
                 btnFormulir.classList.remove('hidden');
                 btnPengumuman.classList.remove('hidden');
                 btnDaftarUlang.classList.remove('hidden');
+                
+                // KEMBALIKAN LAYOUT KE SUSUNAN NORMAL (Grid 4 kolom sejajar)
+                menuGrid.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 w-full max-w-6xl px-2";
+                btnPendaftaran.className = "btn-3d btn-blue rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center group cursor-pointer border border-white/10 transition-all duration-300";
+                
+                // Kembalikan ukuran teks tombol pendaftaran seperti semula
+                btnPendaftaran.querySelector('h3').className = "text-base md:text-lg font-bold text-white mb-1";
+                btnPendaftaran.querySelector('p').className = "text-blue-100 text-xs opacity-80 hidden md:block";
+
                 textStatus.innerText = "Mode Admin (Akses Penuh)";
                 textStatus.className = "font-bold text-blue-400 animate-pulse";
             }
@@ -1293,7 +1313,7 @@
                     await new Promise(r => setTimeout(r, 1000));
                 }
 
-                // Kalkulasi Teks Bukti
+                // Kalkulasi Teks Tanda Terima
                 let finalNoKwitansi = syncedData ? (syncedData.noKwitansi || ("KW/2026/" + noPend + "/00")) : ("KW/2026/" + noPend + "/" + Math.floor(100 + Math.random() * 900));
                 let sisaText = "-";
                 let finalStatus = syncedData ? (syncedData.status || "Belum Lunas") : "Belum Lunas";
